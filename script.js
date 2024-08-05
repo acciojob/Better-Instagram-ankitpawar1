@@ -1,56 +1,47 @@
-//your code here
-document.addEventListener("DOMContentLoaded", () => {
-  const images = document.querySelectorAll(".image");
 
-  let dragSrcEl = null;
+let dragindex = 0;
+let dropindex = 0;
+let clone = "";
 
-  function handleDragStart(e) {
-    this.style.opacity = "0.4";
-    dragSrcEl = this;
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/html", this.innerHTML);
-  }
+const images = document.querySelectorAll(".image");
 
-  function handleDragOver(e) {
-    if (e.preventDefault) {
-      e.preventDefault();
+function drag(e) {
+  e.dataTransfer.setData("text", e.target.id);
+}
+
+function allowDrop(e) {
+  e.preventDefault();
+}
+
+function drop(e) {
+  clone = e.target.cloneNode(true);
+  let data = e.dataTransfer.getData("text");
+  let nodelist = document.getElementById("parent").childNodes;
+  console.log(data, e.target.id);
+  for (let i = 0; i < nodelist.length; i++) {
+    if (nodelist[i].id == data) {
+      dragindex = i;
     }
-    e.dataTransfer.dropEffect = "move";
-    return false;
   }
 
-  function handleDragEnter() {
-    this.classList.add("selected");
-  }
+  dragdrop(clone);
 
-  function handleDragLeave() {
-    this.classList.remove("selected");
-  }
+  document
+    .getElementById("parent")
+    .replaceChild(document.getElementById(data), e.target);
 
-  function handleDrop(e) {
-    if (e.stopPropagation) {
-      e.stopPropagation();
-    }
-    if (dragSrcEl !== this) {
-      dragSrcEl.innerHTML = this.innerHTML;
-      this.innerHTML = e.dataTransfer.getData("text/html");
-    }
-    return false;
-  }
+  document
+    .getElementById("parent")
+    .insertBefore(
+      clone,
+      document.getElementById("parent").childNodes[dragindex]
+    );
+}
 
-  function handleDragEnd() {
-    this.style.opacity = "1";
-    images.forEach((image) => {
-      image.classList.remove("selected");
-    });
-  }
+const dragdrop = (image) => {
+  image.ondragstart = drag;
+  image.ondragover = allowDrop;
+  image.ondrop = drop;
+};
 
-  images.forEach((image) => {
-    image.addEventListener("dragstart", handleDragStart);
-    image.addEventListener("dragenter", handleDragEnter);
-    image.addEventListener("dragover", handleDragOver);
-    image.addEventListener("dragleave", handleDragLeave);
-    image.addEventListener("drop", handleDrop);
-    image.addEventListener("dragend", handleDragEnd);
-  });
-});
+images.forEach(dragdrop);
